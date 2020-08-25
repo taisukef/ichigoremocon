@@ -1,0 +1,98 @@
+<!DOCTYPE html><html>
+<head>
+<meta charset='utf-8'>
+<title>IchigoRemocon IoT</title>
+<meta name="viewport" content="width=device-width">
+<meta name="format-detection" content="telephone=no">
+<script type="module">
+import { Sakura } from "./Sakura.js";
+
+window.onload = function() {
+	const mes = function(data) {
+		console.log(mes);
+	};
+	const [sakuratoken, moduleid] = document.location.hash.substring(1).split(",");
+	if (!sakuratoken || !moduleid) {
+		alert("please set sakura.io WebSocket token and moduleid as hash like #[token],[moduleid]");
+		return;
+	}
+
+	const sakura = new Sakura(sakuratoken, function(id, val) {
+		mes(id + " から " + val + " を受信！");
+	});
+	sakura.onopen = () => {
+		console.log("onopen");
+		const send = function(val) {
+			sakura.send(moduleid, val)
+			mes(moduleid + " へ " + Number(val) + " を発信！")
+		}
+		let n = 1;
+		for (const c of ["STOP", "28℃", "29℃"]) {
+			const btn = document.createElement("button");
+			btn.className = "btn";
+			btn.textContent = c;
+			btn.value = n++;
+			btn.onclick = function() {
+				send(this.value);
+			};
+			btns.appendChild(btn);
+		}
+	};
+	sakura.onclose = () => {
+		console.log("onclose");
+		const clear = (p) => {
+			while (p.firstChild) {
+				p.removeChild(p.firstChild);
+			}
+		};
+		clear(btns);
+	};
+};
+
+</script>
+<style>
+body {
+	margin: 0px;
+	padding: 10px;
+	text-align: center;
+	font-family: sans-serif;
+}
+#main {
+	font-size: 30px;
+}
+#btns {
+	margin: 1em;
+}
+.btn {
+	padding: 2em;
+	margin: 1em;
+}
+#output {
+	display: inline-block;;
+	text-align: left;
+	margin: 1em 0 1em 0;
+	width: 80%;
+	padding: 0.5em;
+	border: 1px solid black;
+}
+#credit {
+	font-size: 12px;
+	margin-top: 20px;
+}
+a {
+	color: gray !important;
+}
+</style>
+</head>
+<body>
+
+<h1>IchigoRemocon IoT</h1>
+<p>
+	<div id=btns></div>
+</p>
+
+<div id="credit">
+APP: <a href="https://fukuno.jig.jp/2952">CC BY fukuno.jig.jp</a><br>
+</div>
+</body>
+</html>
